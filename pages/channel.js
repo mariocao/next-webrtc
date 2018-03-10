@@ -2,6 +2,7 @@ import { Link, Router } from "../routes";
 import styled from "styled-components";
 
 import { isClient, seedGen } from "../libs/utils";
+
 import { Layout, SingleBox } from "../components/Layout";
 import Header from "../components/channel/Header";
 import History from "../components/channel/History";
