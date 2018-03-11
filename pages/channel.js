@@ -58,12 +58,14 @@ export default class extends React.Component {
         this.updateHistory({
           msg: message.data.msg,
           type: "partner",
+          sender: message.connection.peer,
           time: Date.now()
         });
       } else if (message.data.cmd === "error") {
         this.updateHistory({
           msg: `${message.data.error}`,
           type: "system",
+          sender: message.connection.peer,
           time: Date.now()
         });
         this.setState({
@@ -72,34 +74,34 @@ export default class extends React.Component {
         });
       }
     });
-    Events.on("peerLeft", message => {
-      const oldPeer = message.connection.peer;
-      console.log("Peer Left:", oldPeer);
-      this.updateHistory({
-        msg: "Peer Disconnected: " + oldPeer,
-        type: "system",
-        time: Date.now()
-      });
-      this.setState({
-        channel: "share",
-        peers: this.state.peers.filter(item => item != oldPeer),
-        title: "Waiting for peers to connect..."
-      });
-      RTC.connectToPeers(this.props.id);
-    });
     Events.on("peerJoined", async message => {
-      const newPeer = message.connection.peer;
-      console.log(`Peer Joined:`, newPeer);
+      console.log(`Peer Joined:`, message.connection.peer);
       this.updateHistory({
-        msg: "Peer Connected: " + newPeer,
+        msg: "Peer Connected",
         type: "system",
+        sender: message.connection.peer,
         time: Date.now()
       });
       this.setState({
         channel: "connected",
-        peers: [...new Set([...this.state.peers, newPeer])],
+        peers: [...new Set([...this.state.peers, message.connection.peer])],
         title: "Channel established"
       });
+    });
+    Events.on("peerLeft", message => {
+      console.log("Peer Left:", message.connection.peer);
+      this.updateHistory({
+        msg: "Peer Disconnected",
+        type: "system",
+        sender: message.connection.peer,
+        time: Date.now()
+      });
+      this.setState({
+        channel: "share",
+        peers: this.state.peers.filter(item => item != message.connection.peer),
+        title: "Waiting for peers to connect..."
+      });
+      RTC.connectToPeers(this.props.id);
     });
   };
 
@@ -115,6 +117,7 @@ export default class extends React.Component {
     this.updateHistory({
       msg: this.state.message,
       type: "me",
+      sender: "me",
       time: Date.now()
     });
     RTC.broadcastMessage({ cmd: "message", msg: this.state.message });

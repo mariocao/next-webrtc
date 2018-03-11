@@ -17,27 +17,23 @@ export default class extends React.Component {
 }
 
 const Sorter = item => {
+  console.log(item);
   switch (item.type) {
     case "system":
       return (
         <System key={item.time}>
-          <Time>{format(item.time, "HH:mm")}</Time>
-          {item.msg}
+          <Meta>{format(item.time, "HH:mm")}</Meta>
+          {item.msg}{item.sender && ` (${item.sender})`}
         </System>
       );
       break;
     case "me":
-      return (
-        <MyMessage key={item.time}>
-          <Time>{format(item.time, "HH:mm")}</Time>
-          {item.msg}
-        </MyMessage>
-      );
+      return <MyMessage key={item.time}>{item.msg}</MyMessage>;
       break;
     case "partner":
       return (
         <Partner key={item.time}>
-          <Time>{format(item.time, "HH:mm")}</Time>
+          <Meta>{item.sender}</Meta>
           {item.msg}
         </Partner>
       );
@@ -48,24 +44,15 @@ const Sorter = item => {
   }
 };
 
-const Time = styled.span`
+const Meta = styled.span`
   font-size: 10px;
   opacity: 0.6;
   margin: 0 0.5rem;
 `;
 
-const Row = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: ${props => (props.border ? "2px solid #222" : "none")};
-`;
-
 const History = styled.div`
   border-top: 2px solid #222;
-  margin: 0 0 5px;
+  margin: 0 0 10px;
   overflow: auto;
   &::-webkit-scrollbar {
     display: none;
@@ -83,12 +70,12 @@ const System = styled.p`
 
 const MyMessage = styled.p`
   text-align: right;
-  padding: 0rem 0rem 0.3rem;
+  padding: 0rem 0.3rem 0.3rem;
   border-bottom: 1px solid rgba(56, 26, 54, 0.2);
   color: rgba(0, 0, 0, 1);
 `;
 
 const Partner = styled.p`
-  padding: 0rem 1rem 0.3rem;
+  padding: 0rem 1rem 0.3rem 0rem;
   border-bottom: 1px solid rgba(56, 26, 54, 0.2);
 `;
