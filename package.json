@@ -1,7 +1,6 @@
 {
   "name": "next-webrtc",
   "version": "0.0.1",
-  "private": false,
   "authors": [
     "Mario Cao"
   ],
