@@ -57,17 +57,25 @@ export default class RTC {
   };
 
   static connectToPeers(roomID) {
-    // This line makes that the chat is only between peer 0 and the rest!
-    console.log("Connections: ",connections.length)
-    for (var i = 0; i <= connections.length; i++) {
-      var tryId = `${roomID}-${i}`;
-      if (tryId !== peer.id && typeof connections[tryId] === "undefined") {
-        var conn = peer.connect(tryId, {
-          reliable: true
+    fetch(`/peerjs/${roomID}`)
+      .then(function(response) {
+        if (response.status >= 400) {
+          throw new Error("Bad response from server");
+        }
+        return response.json();
+      })
+      .then(function(channelPeers) {
+        console.log("Connect to Peers:", channelPeers);
+        channelPeers.forEach(tryId => {
+          if (tryId !== peer.id && typeof connections[tryId] === "undefined") {
+            console.log("Trying to connect to", tryId);
+            var conn = peer.connect(tryId, {
+              reliable: true
+            });
+            RTC.onConnection(conn);
+          }
         });
-        RTC.onConnection(conn);
-      }
-    }
+      });
   }
 
   static broadcastMessage(message) {
