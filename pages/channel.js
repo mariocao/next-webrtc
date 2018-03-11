@@ -52,7 +52,7 @@ export default class extends React.Component {
     RTC.connectToPeers(this.props.id);
 
     Events.on("message", async message => {
-      console.log(`${message.connection.peer}:`, message.data);
+      console.log(`Message: ${message.connection.peer}:`, message.data);
 
       if (message.data.cmd === "message") {
         this.updateHistory({

@@ -17,13 +17,13 @@ export default class extends React.Component {
 }
 
 const Sorter = item => {
-  console.log(item);
   switch (item.type) {
     case "system":
       return (
         <System key={item.time}>
           <Meta>{format(item.time, "HH:mm")}</Meta>
-          {item.msg}{item.sender && ` (${item.sender})`}
+          {item.msg}
+          {item.sender && ` (${item.sender})`}
         </System>
       );
       break;

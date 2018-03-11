@@ -65,7 +65,6 @@ export default class RTC {
         return response.json();
       })
       .then(function(channelPeers) {
-        console.log("Connect to Peers:", channelPeers);
         channelPeers.forEach(tryId => {
           if (tryId !== peer.id && typeof connections[tryId] === "undefined") {
             console.log("Trying to connect to", tryId);
