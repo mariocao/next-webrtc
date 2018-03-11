@@ -7,6 +7,8 @@ import { Layout, SingleBox } from "../components/Layout";
 import Header from "../components/channel/Header";
 import History from "../components/channel/History";
 
+import RTC from "../libs/rtc";
+
 export default class extends React.Component {
   static async getInitialProps({ query }) {
     return query;
@@ -14,22 +16,92 @@ export default class extends React.Component {
 
   state = {
     visible: 0,
-    title: `Waiting for peer to connect...`,
-    history: [
-      { msg: "Waiting for a partner...", type: "system", time: Date.now() }
-    ],
+    alert: false,
+    alertText: "Test",
     connected: false,
     channel: "share",
-    alert: false,
-    alertText: "Test"
+    userID: undefined,
+    peers: [],
+    title: "Waiting for peers to connect...",
+    history: [
+      { msg: "Waiting for a peer...", type: "system", time: Date.now() }
+    ],
+    message: ""
   };
 
   componentDidMount() {
+    if (this.props.id === undefined) {
+      Router.pushRoute(`/`);
+    }
     console.log("Channel ID: " + this.props.id);
     setTimeout(() => {
       this.setState({ visible: 1 });
     }, 300);
+    this.initChannel();
   }
+
+  initChannel = async () => {
+    console.log("Init channel ID", this.props.id);
+    var started = false;
+    var peer = await RTC.initChannel(this.props.id);
+    this.setState({
+      userID: peer.id
+    });
+    var Events = RTC.getEvents();
+
+    RTC.connectToPeers(this.props.id);
+
+    Events.on("message", async message => {
+      console.log(`${message.connection.peer}:`, message.data);
+
+      if (message.data.cmd === "message") {
+        this.updateHistory({
+          msg: message.data.msg,
+          type: "partner",
+          time: Date.now()
+        });
+      } else if (message.data.cmd === "error") {
+        this.updateHistory({
+          msg: `${message.data.error}`,
+          type: "system",
+          time: Date.now()
+        });
+        this.setState({
+          alert: true,
+          alertText: message.data.error
+        });
+      }
+    });
+    Events.on("peerLeft", message => {
+      const oldPeer = message.connection.peer;
+      console.log("Peer Left:", oldPeer);
+      this.updateHistory({
+        msg: "Peer Disconnected: " + oldPeer,
+        type: "system",
+        time: Date.now()
+      });
+      this.setState({
+        channel: "share",
+        peers: this.state.peers.filter(item => item != oldPeer),
+        title: "Waiting for peers to connect..."
+      });
+      RTC.connectToPeers(this.props.id);
+    });
+    Events.on("peerJoined", async message => {
+      const newPeer = message.connection.peer;
+      console.log(`Peer Joined:`, newPeer);
+      this.updateHistory({
+        msg: "Peer Connected: " + newPeer,
+        type: "system",
+        time: Date.now()
+      });
+      this.setState({
+        channel: "connected",
+        peers: [...new Set([...this.state.peers, newPeer])],
+        title: "Channel established"
+      });
+    });
+  };
 
   updateHistory = data => {
     var history = this.state.history;
@@ -45,7 +117,7 @@ export default class extends React.Component {
       type: "me",
       time: Date.now()
     });
-    //RTC.broadcastMessage({ cmd: "message", msg: this.state.message })
+    RTC.broadcastMessage({ cmd: "message", msg: this.state.message });
     console.log("Sending message", this.state.message);
     this.setState({ message: "" });
   };
@@ -65,16 +137,18 @@ export default class extends React.Component {
         </Alert>
         <SingleBox active={this.state.visible === 1} row wide>
           <Left>
-            {this.state.channel === "share" && (
-              <div>
-                <Header
-                  title={this.state.title}
-                  connected={this.state.connected}
-                />
-                <p>Share this room link with your partner:</p>
-                <p>{isClient ? window.location.href : null}</p>
-              </div>
-            )}
+            <div>
+              <Header
+                title={this.state.title}
+                connected={this.state.peers.length > 0}
+              />
+              <p>Your ID: {this.state.userID}</p>
+              <p>Connected peers: {this.state.peers.length}</p>
+              <br />
+              <p>Share this room link with your partner:</p>
+              <p>{isClient ? window.location.href : null}</p>
+            </div>
+            {/* )} */}
           </Left>
           <Right>
             <h3>Channel History</h3>
@@ -159,7 +233,7 @@ const Input = styled.input`
 
 const Left = styled.div`
   position: relative;
-  flex: 1.7 0;
+  flex: 1.5 0;
   flex-direction: column;
   height: 100%;
   padding: 10px 20px;
