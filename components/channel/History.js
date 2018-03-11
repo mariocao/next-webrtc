@@ -1,5 +1,5 @@
 import styled from "styled-components"
-// import { format } from "date-fns"
+import { format } from "date-fns"
 
 export default class extends React.Component {
   componentDidUpdate() {
@@ -24,7 +24,7 @@ const Sorter = item => {
     case "me":
       return (
         <MyMessage key={item.time}>
-          {/* <Time>{format(item.time, "mm:ss")}</Time> */}
+          <Time>{format(item.time, "mm:ss")}</Time>
           {item.msg}
         </MyMessage>
       )
