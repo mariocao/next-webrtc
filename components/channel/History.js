@@ -1,48 +1,58 @@
-import styled from "styled-components"
-import { format } from "date-fns"
+import styled from "styled-components";
+import { format } from "date-fns";
 
 export default class extends React.Component {
   componentDidUpdate() {
     // get the messagelist container and set the scrollTop to the height of the container
-    const objDiv = document.getElementById("messageList")
-    objDiv.scrollTop = objDiv.scrollHeight
+    const objDiv = document.getElementById("messageList");
+    objDiv.scrollTop = objDiv.scrollHeight;
   }
   render() {
     return (
       <History id="messageList">
         {this.props.messages.map((item, i) => Sorter(item))}
       </History>
-    )
+    );
   }
 }
 
 const Sorter = item => {
   switch (item.type) {
     case "system":
-      return <System key={item.time}>{item.msg}</System>
-      break
+      return (
+        <System key={item.time}>
+          <Time>{format(item.time, "HH:mm")}</Time>
+          {item.msg}
+        </System>
+      );
+      break;
     case "me":
       return (
         <MyMessage key={item.time}>
-          <Time>{format(item.time, "mm:ss")}</Time>
+          <Time>{format(item.time, "HH:mm")}</Time>
           {item.msg}
         </MyMessage>
-      )
-      break
+      );
+      break;
     case "partner":
-      return <Partner key={item.time}>{item.msg}</Partner>
-      break
+      return (
+        <Partner key={item.time}>
+          <Time>{format(item.time, "HH:mm")}</Time>
+          {item.msg}
+        </Partner>
+      );
+      break;
 
     default:
-      break
+      break;
   }
-}
+};
 
 const Time = styled.span`
   font-size: 10px;
   opacity: 0.6;
-  margin: 0 1rem;
-`
+  margin: 0 0.5rem;
+`;
 
 const Row = styled.div`
   width: 100%;
@@ -51,7 +61,7 @@ const Row = styled.div`
   justify-content: space-between;
   align-items: center;
   border-bottom: ${props => (props.border ? "2px solid #222" : "none")};
-`
+`;
 
 const History = styled.div`
   border-top: 2px solid #222;
@@ -61,7 +71,7 @@ const History = styled.div`
     display: none;
   }
   flex: 1;
-`
+`;
 const System = styled.p`
   height: 20px;
   font-size: 12px;
@@ -69,16 +79,16 @@ const System = styled.p`
   color: rgba(0, 0, 0, 0.5);
   padding-bottom: 5px;
   border-bottom: 1px solid rgba(56, 26, 54, 0.2);
-`
+`;
 
 const MyMessage = styled.p`
   text-align: right;
-  padding: 0rem 1rem 0.3rem;
+  padding: 0rem 0rem 0.3rem;
   border-bottom: 1px solid rgba(56, 26, 54, 0.2);
-  color: rgba(0, 0, 0, 0.6);
-`
+  color: rgba(0, 0, 0, 1);
+`;
 
 const Partner = styled.p`
   padding: 0rem 1rem 0.3rem;
   border-bottom: 1px solid rgba(56, 26, 54, 0.2);
-`
+`;
