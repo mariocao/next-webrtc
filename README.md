@@ -25,6 +25,6 @@ The application has the following endpoints:
 
 ## To-Dos
 
-[ ] Refactor the channel page (extract React components)
-[ ] Change peer names within the chanel
-[ ] ...
+- [ ] Refactor the channel page (extract React components)
+- [ ] Change peer names within the chanel
+- [ ] ...
